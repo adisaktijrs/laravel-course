@@ -2,30 +2,39 @@
 
 @section('content')
     @forelse ($posts as $post)
-        <p>
+        <div class="mb-4">
             <h3>
                 <a href="{{ route('posts.show', ['post' => $post->id]) }}">{{ $post->title }}</a>
             </h3>
 
-            @if($post->comments_count)
+            <p class="text-muted">Added {{ $post->created_at->diffForHumans() }} by {{ $post->user->name }}</p>
+
+            @if ($post->comments_count)
                 <p>{{ $post->comments_count }} comments</p>
             @else
                 <p>No comments yet!</p>
             @endif
 
-            <a href="{{ route('posts.edit', ['post' => $post->id]) }}"
-                class="btn btn-primary">
-                Edit
-            </a>
+            @can('update', $post)
+                <a href="{{ route('posts.edit', ['post' => $post->id]) }}" class="btn btn-primary btn-sm">
+                    Edit
+                </a>
+            @endcan
 
-            <form method="POST" class="fm-inline"
-                action="{{ route('posts.destroy', ['post' => $post->id]) }}">
-                @csrf
-                @method('DELETE')
+            {{--  @cannot('delete', $post)
+                <p>You cannot delete the post.</p>
+            @endcannot  --}}
 
-                <input type="submit" value="Delete!" class="btn btn-primary"/>
-            </form>
-        </p>
+            @can('delete', $post)
+                <form method="POST" class="fm-inline" action="{{ route('posts.destroy', ['post' => $post->id]) }}">
+                    @csrf
+                    @method('DELETE')
+
+                    <input type="submit" value="Delete!" class="btn btn-primary btn-sm" />
+                </form>
+            @endcan
+
+        </div>
     @empty
         <p>No blog posts yet!</p>
     @endforelse
