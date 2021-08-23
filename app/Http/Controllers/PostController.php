@@ -2,9 +2,10 @@
 
 namespace App\Http\Controllers;
 
+use App\User;
 use App\BlogPost;
-use App\Http\Requests\StorePost;
 use Illuminate\Http\Request;
+use App\Http\Requests\StorePost;
 use Illuminate\Support\Facades\Gate;
 
 // use Illuminate\Support\Facades\DB;
@@ -39,7 +40,12 @@ class PostController extends Controller
 
         return view(
             'posts.index', 
-            ['posts' => BlogPost::withCount('comments')->orderBy('created_at', 'desc')->get()]
+            [
+                'posts' => BlogPost::latest()->withCount('comments')->get(),
+                'mostCommented' => BlogPost::mostCommented()->take(5)->get(),
+                'mostActive' => User::withMostBlogPosts()->take(5)->get(),
+                'mostActiveLastMonth' =>User::withMostBlogPostsLastMonth()->take(5)->get()
+            ]
         );
     }
 
@@ -52,6 +58,12 @@ class PostController extends Controller
      */
     public function show($id)
     {
+        // return view('posts.show', [
+        //     'post' => BlogPost::with(['comments' => function ($query) {
+        //         return $query->latest();
+        //     }])->findOrFail($id)
+        // ]);
+
         return view('posts.show', [
             'post' => BlogPost::with('comments')->findOrFail($id)
         ]);
