@@ -24,26 +24,32 @@
                         <p>No comments yet!</p>
                     @endif
 
-                    @can('update', $post)
-                        <a href="{{ route('posts.edit', ['post' => $post->id]) }}" class="btn btn-primary btn-sm">
-                            Edit
-                        </a>
-                    @endcan
+                    @auth
+                        @can('update', $post)
+                            <a href="{{ route('posts.edit', ['post' => $post->id]) }}" class="btn btn-primary btn-sm">
+                                Edit
+                            </a>
+                        @endcan
+                    @endauth
 
                     {{-- @cannot('delete', $post)
-                <p>You cannot delete the post.</p>
-            @endcannot --}}
-                    @if (!$post->trashed())
-                        @can('delete', $post)
-                            <form method="POST" class="fm-inline"
-                                action="{{ route('posts.destroy', ['post' => $post->id]) }}">
-                                @csrf
-                                @method('DELETE')
+                        <p>You cannot delete the post.</p>
+                    @endcannot --}}
 
-                                <input type="submit" value="Delete!" class="btn btn-primary btn-sm" />
-                            </form>
-                        @endcan
-                    @endif
+                    @auth
+                        @if (!$post->trashed())
+                            @can('delete', $post)
+                                <form method="POST" class="fm-inline"
+                                    action="{{ route('posts.destroy', ['post' => $post->id]) }}">
+                                    @csrf
+                                    @method('DELETE')
+
+                                    <input type="submit" value="Delete!" class="btn btn-primary btn-sm" />
+                                </form>
+                            @endcan
+                        @endif
+                    @endauth
+                    
 
                 </div>
             @empty

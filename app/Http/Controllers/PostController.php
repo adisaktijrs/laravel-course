@@ -2,13 +2,11 @@
 
 namespace App\Http\Controllers;
 
-use App\User;
 use App\BlogPost;
-use Illuminate\Http\Request;
 use App\Http\Requests\StorePost;
-use Illuminate\Support\Facades\Gate;
-
-// use Illuminate\Support\Facades\DB;
+use App\User;
+use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Cache;
 
 class PostController extends Controller
 {
@@ -24,27 +22,25 @@ class PostController extends Controller
      */
     public function index()
     {
-        // DB::connection()->enableQueryLog();
+        $mostCommented = Cache::remember('mostCommented', now()->addSeconds(10), function () {
+            return BlogPost::mostCommented()->take(5)->get();
+        });
 
-        // $posts = BlogPost::with('comments')->get();
+        $mostActive = Cache::remember('mostActive', now()->addSeconds(10), function () {
+            return User::withMostBlogPosts()->take(5)->get();
+        });
 
-        // foreach ($posts as $post) {
-        //     foreach ($post->comments as $comment) {
-        //         echo $comment->content;
-        //     }
-        // }
-
-        // dd(DB::getQueryLog());
-
-        // comments_count
+        $mostActiveLastMonth = Cache::remember('mostActiveLastMonth', now()->addSeconds(10), function () {
+            return User::withMostBlogPostsLastMonth()->take(5)->get();
+        });
 
         return view(
-            'posts.index', 
+            'posts.index',
             [
-                'posts' => BlogPost::latest()->withCount('comments')->get(),
-                'mostCommented' => BlogPost::mostCommented()->take(5)->get(),
-                'mostActive' => User::withMostBlogPosts()->take(5)->get(),
-                'mostActiveLastMonth' =>User::withMostBlogPostsLastMonth()->take(5)->get()
+                'posts' => BlogPost::latest()->withCount('comments')->with('user')->get(),
+                'mostCommented' => $mostCommented,
+                'mostActive' => $mostActive,
+                'mostActiveLastMonth' => $mostActiveLastMonth,
             ]
         );
     }
@@ -65,7 +61,7 @@ class PostController extends Controller
         // ]);
 
         return view('posts.show', [
-            'post' => BlogPost::with('comments')->findOrFail($id)
+            'post' => BlogPost::with('comments')->findOrFail($id),
         ]);
     }
 
@@ -92,7 +88,6 @@ class PostController extends Controller
         //     abort(403, "You can't edit this Blog Post!");
         // }
         $this->authorize($post);
-
 
         return view('posts.edit', ['post' => $post]);
     }
