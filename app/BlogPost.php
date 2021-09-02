@@ -25,6 +25,11 @@ class BlogPost extends Model
         return $this->belongsTo('App\User');
     }
 
+    public function tags()
+    {
+        return $this->belongsToMany('App\Tag')->withTimestamps();
+    }
+
     public function scopeLatest(Builder $query)
     {
         return $query->orderBy(static::CREATED_AT, 'desc');
@@ -42,11 +47,13 @@ class BlogPost extends Model
         parent::boot();
 
         static::deleting(function (BlogPost $blogPost) {
+            // Add this line myself to delete the cache when the post is being deleted
+            Cache::tags(['blog-post'])->forget("blog-post-{$blogPost->id}");
             $blogPost->comments()->delete();
         });
 
         static::updating(function (BlogPost $blogPost) {
-            Cache::forget("blog-post-{$blogPost->id}");
+            Cache::tags(['blog-post'])->forget("blog-post-{$blogPost->id}");
         });
 
         static::restoring(function (BlogPost $blogPost) {
