@@ -10,7 +10,7 @@
         value="{{ old('content', $post->content ?? null) }}"/>
 </div>
 
-@if($errors->any())
+{{--  @if($errors->any())
     <div>
         <ul>
             @foreach($errors->all() as $error)
@@ -18,4 +18,6 @@
             @endforeach
         </ul>
     </div>
-@endif
+@endif  --}}
+@errors()
+@enderrors
