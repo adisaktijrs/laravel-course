@@ -3,6 +3,11 @@
 @section('content')
     <div class="row">
         <div class="col-8">
+            @if ($post->image)
+                <div class="mb-3">
+                    <img class="img-fluid" src="{{ $post->image->url() }}" />
+                </div>
+            @endif
             <h1>
                 {{ $post->title }}
         
@@ -14,6 +19,8 @@
             </h1>
         
             <p>{{ $post->content }}</p>
+
+            {{-- <img src="{{ Storage::url($post->image->path) }}" /> --}}
         
         
             @updated(['date' => $post->created_at, 'name' => $post->user->name])
